@@ -1,36 +1,39 @@
 package ru.practicum.kanban.tasks;
 
+import ru.practicum.kanban.service.TaskManager;
 import ru.practicum.kanban.status.TaskStatus;
 
 import java.util.Objects;
 
 public class Task {
-    private final String name;
-    private final String description;
+    private String name;
+    private String description;
     TaskStatus taskStatus;
-    private int taskID;
+    private int taskId;
 
     public Task(String name, String description) {
         this.name = name;
         this.description = description;
-        taskID = this.hashCode();
         updateStatus(taskStatus);
+        if (taskId == 0) {
+            this.taskId = TaskManager.generateTaskId();
+        }
     }
 
-    public Task(String name, String description, TaskStatus taskStatus) {
+    public Task(String name, String description, TaskStatus taskStatus, int taskId) {
         this.name = name;
         this.description = description;
-        taskID = this.hashCode();
+        this.taskId = taskId;
         updateStatus(taskStatus);
     }
 
-    public Task(String name, String description, int taskID) {
+    public Task(String name, String description, int taskId) {
         this(name, description);
-        this.taskID = taskID;
+        this.taskId = taskId;
     }
 
     public Task(Task task) {
-        this(task.name, task.description, task.taskID);
+        this(task.name, task.description, task.taskId);
         updateStatus(task.getTaskStatus());
     }
 
@@ -50,20 +53,28 @@ public class Task {
         }
     }
 
-    public int getTaskID() {
-        return taskID;
-    }
-
-    public TaskStatus getTaskStatus() {
-        return taskStatus;
+    public String getDescription() {
+        return description;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getDescription() {
-        return description;
+    public int getTaskId() {
+        return taskId;
+    }
+
+    public TaskStatus getTaskStatus() {
+        return taskStatus;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -72,7 +83,7 @@ public class Task {
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", taskStatus=" + taskStatus +
-                ", taskID=" + taskID +
+                ", taskId=" + taskId +
                 '}';
     }
 

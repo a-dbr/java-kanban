@@ -1,20 +1,20 @@
 package ru.practicum.kanban.tasks;
 
 public class SubTask extends Task {
-    private final int epicID;
+    private final int epicId;
 
-    public SubTask(String name, String description, int epicID) {
+    public SubTask(String name, String description, int epicId) {
         super(name, description);
-        this.epicID = epicID;
+        this.epicId = epicId;
     }
 
-    public SubTask(SubTask subTask, int epicID) {
+    public SubTask(SubTask subTask, int epicId) {
         super(subTask);
-        this.epicID = epicID;
+        this.epicId = epicId;
     }
 
-    public int getEpicID() {
-        return epicID;
+    public int getEpicId() {
+        return epicId;
     }
 
     @Override
@@ -22,8 +22,8 @@ public class SubTask extends Task {
         return "SubTask{" +
                 "name='" + this.getName() + '\'' +
                 ", description='" + this.getDescription() + '\'' +
-                ", taskID=" + this.getTaskID() +
-                ", epicID=" + epicID +
+                ", taskId=" + this.getTaskId() +
+                ", epicId=" + epicId +
                 ", taskStatus=" + taskStatus +
                 '}';
     }

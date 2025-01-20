@@ -1,7 +1,3 @@
-/*
-* Пытался в полиморфизм, вышло так себе
-*/
-
 package ru.practicum.kanban.service;
 
 import ru.practicum.kanban.status.TaskStatus;
@@ -15,89 +11,105 @@ import java.util.HashMap;
 
 public class TaskManager {
     private final Map<Integer, Task> tasks;
+    private final Map<Integer, Epic> epics;
+    private final Map<Integer, SubTask> subTasks;
+    public static int taskCounter;
 
     public TaskManager() {
         tasks = new HashMap<>();
+        epics = new HashMap<>();
+        subTasks = new HashMap<>();
+
+        taskCounter = 0;
+    }
+
+    public void addTask(Task task) {
+        if (task.getClass().equals(Task.class)) {
+            tasks.put(task.getTaskId(), task);
+        } else if (task.getClass().equals(Epic.class)) {
+            epics.put(task.getTaskId(), (Epic) task);
+        } else if (task.getClass().equals(SubTask.class)) {
+            subTasks.put(task.getTaskId(), (SubTask) task);
+            epics.get(((SubTask) task).getEpicId()).addSubTaskId(task.getTaskId());
+        }
+    }
+
+    public static int generateTaskId() {
+        return ++taskCounter;
     }
 
     public String getAllTasks() {
         return this.toString();
     }
 
-    public void deleteAllTasks() {
+    public Task getTask(Task task) {
+        if (task.getClass().equals(Task.class)) {
+            return tasks.get(task.getTaskId());
+        } else if (task.getClass().equals(Epic.class)) {
+            return epics.get(task.getTaskId());
+        } else if (task.getClass().equals(SubTask.class)) {
+            return subTasks.get(task.getTaskId());
+        }
+        return null;
+    }
+
+    public void removeAllTasks() {
         tasks.clear();
+        epics.clear();
+        subTasks.clear();
+        taskCounter = 0;
     }
 
-    public Task getTask(Object o) {
-        if (o.getClass().equals(Task.class) || o.getClass().equals(Epic.class)) {
-            Task task = (Task) o;
-            return tasks.get(task.getTaskID());
-        } else if (o.getClass().equals(SubTask.class)) {
-            SubTask task = (SubTask) o;
-            int epicID = task.getEpicID();
-            Epic epic = (Epic) tasks.get(epicID);
-            return epic.getSubTask(task);
-        }
-        return null; // try/catch еще не изучали
-    }
+    public void removeTask(Task task) {
+        if (task.getClass().equals(Task.class)) {
+            tasks.remove(task.getTaskId());
+        } else if (task.getClass().equals(Epic.class)) {
+            epics.remove(task.getTaskId());
+        } else if (task.getClass().equals(SubTask.class)) {
+            Epic epic = epics.get(((SubTask) task).getEpicId());
 
-    public void addTask(Object o) {
-        if (o.getClass().equals(Task.class)) {
-            Task task = (Task) o;
-            tasks.put(task.getTaskID(), task);
-
-        } else if (o.getClass().equals(Epic.class)) {
-            Epic epic = (Epic) o;
-            tasks.put(epic.getTaskID(), epic);
-        } else if (o.getClass().equals(SubTask.class)) {
-            SubTask subTask = (SubTask) o;
-            int epicID = subTask.getEpicID();
-
-            Epic epic = (Epic) tasks.get(epicID);
-            epic.addSubTask(subTask);
+            epic.removeSubTaskById(task.getTaskId());
+            subTasks.remove(task.getTaskId());
         }
     }
 
-    public void updateTask(Object o) {  //automatic task status update
-        if (o.getClass().equals(Task.class)) {
-            Task task = (Task) o;
-            final int taskID = task.getTaskID();
-
-            if (tasks.containsKey(taskID) && (task.getTaskStatus() != TaskStatus.DONE)) {
-                task = tasks.get(taskID);
-                tasks.put(taskID, new Task(task));
+    private boolean subTasksIsDone(Epic epic) {
+        List<Integer> subTasksIds = epic.getSubTasksIds();
+        for (int subTaskId : subTasksIds) {
+            if (subTasks.get(subTaskId).getTaskStatus() != TaskStatus.DONE) {
+                return false;
             }
+        }
+        epic.setDone(true);
+        return true;
+    }
 
-        } else if (o.getClass().equals(Epic.class)) {
-            Epic epic = (Epic) o;
-            final int epicID = epic.getTaskID();
+    public void updateTask(Task task) {  //automatic task status update
+        final int taskId = task.getTaskId();
 
-            if (tasks.containsKey(epicID) && (epic.getTaskStatus() != TaskStatus.DONE)) {
-                epic = (Epic) tasks.get(epicID);
-                if (epic.getTaskStatus() == TaskStatus.NEW) {
-                    tasks.put(epicID, new Epic(epic));
+        if (task.getClass().equals(Task.class)) {
+            if (tasks.containsKey(taskId) && (task.getTaskStatus() != TaskStatus.DONE)) {
+                tasks.put(taskId, new Task(tasks.get(taskId)));
+            }
+        } else if (task.getClass().equals(Epic.class)) {
+            if (epics.containsKey(taskId) && ((task.getTaskStatus() != TaskStatus.DONE))) {
+                if (task.getTaskStatus() == TaskStatus.NEW) {
+                    epics.put(taskId, new Epic((Epic) task)); //setting epic status IN_PROGRESS
 
-                    if (!epic.getSubTasks().isEmpty()) {
-                        List<SubTask> subTasks = epic.getSubTasks();
-                        for (int i = 0; i < subTasks.size(); i++) {
-                            subTasks.set(i, new SubTask(subTasks.get(i), epicID));
+                    if (!((Epic) task).getSubTasksIds().isEmpty()) { //updating subtask statuses
+                        for (int subTaskId : ((Epic) task).getSubTasksIds()) {
+                            subTasks.put(subTaskId, new SubTask(subTasks.get(subTaskId), taskId));
                         }
                     }
-
-                } else if (epic.getTaskStatus() == TaskStatus.IN_PROGRESS && epic.isDone()) {
-                    tasks.put(epic.getTaskID(), new Epic(epic));
+                } else if (task.getTaskStatus() == TaskStatus.IN_PROGRESS && ((Epic) task).isDone()) {
+                    epics.put(task.getTaskId(), new Epic((Epic) task));
                 }
             }
+        } else if (task.getClass().equals(SubTask.class)) {
+            final Epic epic = epics.get(((SubTask) task).getEpicId());
 
-        } else if (o.getClass().equals(SubTask.class)) {
-            SubTask subTask = (SubTask) o;
-            int epicID = subTask.getEpicID();
-            final Epic epic = (Epic) tasks.get(epicID);
-            List<SubTask> subTasksList = epic.getSubTasks();
-
-            if (subTasksList.contains(subTask)) {
-                int index = subTasksList.indexOf(subTask);
-                subTasksList.set(index, new SubTask(subTasksList.get(index), epicID));
+            if (subTasks.containsKey(taskId)) {
+                subTasks.put(taskId, new SubTask((SubTask) task, ((SubTask) task).getEpicId()));
 
                 if (subTasksIsDone(epic)) {  //check epic status after subtask update
                     updateTask(epic);
@@ -107,33 +119,13 @@ public class TaskManager {
 
     }
 
-    private boolean subTasksIsDone(Epic epic) {
-        List<SubTask> subTasks = epic.getSubTasks();
-        for (SubTask subTask : subTasks) {
-            if (subTask.getTaskStatus() != TaskStatus.DONE) {
-                return false;
-            }
-        }
-        epic.setDone(true);
-        return true;
-    }
-
-    public void removeTask(Object o) {
-        if (o.getClass().equals(Task.class) || o.getClass().equals(Epic.class)) {
-            Task task = (Task) o;
-            tasks.remove(task.getTaskID());
-        } else if (o.getClass().equals(SubTask.class)) {
-            SubTask task = (SubTask) o;
-            int epicID = task.getEpicID();
-            Epic epic = (Epic) tasks.get(epicID);
-            epic.removeSubTask(task);
-        }
-    }
-
     @Override
     public String toString() {
         return "TaskManager{" +
                 "tasks=" + tasks +
+                ", epics=" + epics +
+                ", subTasks=" + subTasks +
+                ", taskCounter=" + taskCounter +
                 '}';
     }
 }

@@ -8,40 +8,38 @@ import java.util.List;
 
 public class Epic extends Task {
     private boolean isDone = false;
-    private final List<SubTask> subTasks;
+    private final List<Integer> subTasksIds;
 
     public Epic(String name, String description) {
         super(name, description);
-        subTasks = new ArrayList<>();
+        subTasksIds = new ArrayList<>();
     }
 
-    public Epic(String name, String description, boolean isDone, TaskStatus taskStatus, List<SubTask> subTasks) {
-        super(name, description, taskStatus);
-        this.subTasks = subTasks;
+    public Epic(String name, String description, boolean isDone, TaskStatus taskStatus, int taskId, List<Integer> subTasksIds) {
+        super(name, description, taskStatus, taskId);
+        this.subTasksIds = subTasksIds;
         this.isDone = isDone;
     }
 
     public Epic(Epic epic) {
-        this(epic.getName(), epic.getDescription(), epic.isDone(), epic.getTaskStatus(), epic.subTasks);
+        this(epic.getName(), epic.getDescription(), epic.isDone(), epic.getTaskStatus(), epic.getTaskId(), epic.subTasksIds);
     }
 
-    public List<SubTask> getSubTasks() {
-        return subTasks;
+    public List<Integer> getSubTasksIds() {
+        return subTasksIds;
     }
 
-    public SubTask getSubTask(SubTask subTask) {
-        int index = subTasks.indexOf(subTask);
-        return subTasks.get(index);
+    public int getSubTaskId(int subTaskId) {
+        int index = subTasksIds.indexOf(subTaskId);
+        return subTasksIds.get(index);
     }
 
-
-    public void addSubTask(SubTask subTask) {
-        subTasks.add(subTask);
+    public void addSubTaskId(int subTaskId) {
+        subTasksIds.add(subTaskId);
     }
 
-    public void removeSubTask(Object o) {
-        SubTask subTask = (SubTask) o;
-        subTasks.remove(subTask);
+    public void removeSubTaskById(Integer subTaskId) {
+        subTasksIds.remove(subTaskId);
     }
 
     public boolean isDone() {
@@ -55,13 +53,12 @@ public class Epic extends Task {
     @Override
     public String toString() {
         return "Epic{" +
-                "name='" + this.getName() + '\'' +
+                "name='" + getName() + '\'' +
                 ", description='" + this.getDescription() + '\'' +
-                ", taskID=" + this.getTaskID() +
+                ", taskId=" + this.getTaskId() +
                 ", isDone=" + isDone +
-                ", subTasks=" + subTasks +
+                ", subTasksIds=" + subTasksIds +
                 ", taskStatus=" + taskStatus +
                 '}';
     }
 }
-
