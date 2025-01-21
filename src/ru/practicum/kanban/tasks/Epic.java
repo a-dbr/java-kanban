@@ -8,30 +8,58 @@ import java.util.List;
 
 public class Epic extends Task {
     private boolean isDone = false;
-    private final List<Integer> subTasksIds;
+    private List<Integer> subTasksIds;
 
     public Epic(String name, String description) {
         super(name, description);
         subTasksIds = new ArrayList<>();
     }
 
-    public Epic(String name, String description, boolean isDone, TaskStatus taskStatus, int taskId, List<Integer> subTasksIds) {
+    public Epic(
+            String name,
+            String description,
+            TaskStatus taskStatus,
+            int taskId) {
+
         super(name, description, taskStatus, taskId);
-        this.subTasksIds = subTasksIds;
+    }
+
+    public Epic(
+            String name,
+            String description,
+            TaskStatus taskStatus,
+            int taskId,
+            List<Integer> subTasksIds,
+            boolean isDone) {
+
+        this(name, description, taskStatus, taskId);
+
         this.isDone = isDone;
+        this.subTasksIds = subTasksIds;
     }
 
     public Epic(Epic epic) {
-        this(epic.getName(), epic.getDescription(), epic.isDone(), epic.getTaskStatus(), epic.getTaskId(), epic.subTasksIds);
+        this(
+                epic.getName(),
+                epic.getDescription(),
+                epic.getTaskStatus(),
+                epic.getTaskId(),
+                epic.subTasksIds,
+                epic.isDone());
+    }
+
+    public Epic(Epic epic, TaskStatus taskStatus) {
+        this(
+                epic.getName(),
+                epic.getDescription(),
+                taskStatus,
+                epic.getTaskId(),
+                epic.subTasksIds,
+                epic.isDone());
     }
 
     public List<Integer> getSubTasksIds() {
         return subTasksIds;
-    }
-
-    public int getSubTaskId(int subTaskId) {
-        int index = subTasksIds.indexOf(subTaskId);
-        return subTasksIds.get(index);
     }
 
     public void addSubTaskId(int subTaskId) {
@@ -58,7 +86,7 @@ public class Epic extends Task {
                 ", taskId=" + this.getTaskId() +
                 ", isDone=" + isDone +
                 ", subTasksIds=" + subTasksIds +
-                ", taskStatus=" + taskStatus +
+                ", taskStatus=" + this.getTaskStatus() +
                 '}';
     }
 }

@@ -5,52 +5,31 @@ import ru.practicum.kanban.status.TaskStatus;
 
 import java.util.Objects;
 
+//Для ревьюера: Перечитал внимательно условие задачи. Обновление свойств класса через создание новых объектов.
+//Поэтому все поля сделал final.
+
 public class Task {
-    private String name;
-    private String description;
-    TaskStatus taskStatus;
-    private int taskId;
+    private final String name;
+    private final String description;
+    private final TaskStatus taskStatus;
+    private final int taskId;
 
     public Task(String name, String description) {
         this.name = name;
         this.description = description;
-        updateStatus(taskStatus);
-        if (taskId == 0) {
-            this.taskId = TaskManager.generateTaskId();
-        }
+        this.taskStatus = TaskStatus.NEW;
+        this.taskId = TaskManager.generateTaskId();
     }
 
     public Task(String name, String description, TaskStatus taskStatus, int taskId) {
         this.name = name;
         this.description = description;
         this.taskId = taskId;
-        updateStatus(taskStatus);
-    }
-
-    public Task(String name, String description, int taskId) {
-        this(name, description);
-        this.taskId = taskId;
+        this.taskStatus = taskStatus;
     }
 
     public Task(Task task) {
-        this(task.name, task.description, task.taskId);
-        updateStatus(task.getTaskStatus());
-    }
-
-    void updateStatus(TaskStatus taskStatus) {
-        switch (taskStatus) {
-            case null:
-                this.taskStatus = TaskStatus.NEW;
-                break;
-            case NEW:
-                this.taskStatus = TaskStatus.IN_PROGRESS;
-                break;
-            case IN_PROGRESS:
-                this.taskStatus = TaskStatus.DONE;
-                break;
-            case DONE:
-                break;
-        }
+        this(task.name, task.description, task.taskStatus, task.taskId);
     }
 
     public String getDescription() {
@@ -67,14 +46,6 @@ public class Task {
 
     public TaskStatus getTaskStatus() {
         return taskStatus;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     @Override

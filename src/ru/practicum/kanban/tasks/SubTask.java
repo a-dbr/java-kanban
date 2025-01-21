@@ -1,5 +1,7 @@
 package ru.practicum.kanban.tasks;
 
+import ru.practicum.kanban.status.TaskStatus;
+
 public class SubTask extends Task {
     private final int epicId;
 
@@ -8,9 +10,19 @@ public class SubTask extends Task {
         this.epicId = epicId;
     }
 
-    public SubTask(SubTask subTask, int epicId) {
-        super(subTask);
+    public SubTask(String name, String description, TaskStatus taskStatus, int taskId, int epicId) {
+        super(name, description, taskStatus, taskId);
         this.epicId = epicId;
+    }
+
+    public SubTask(SubTask subTask) {
+        this(
+                subTask.getName(),
+                subTask.getDescription(),
+                subTask.getTaskStatus(),
+                subTask.getTaskId(),
+                subTask.getEpicId()
+        );
     }
 
     public int getEpicId() {
@@ -24,7 +36,7 @@ public class SubTask extends Task {
                 ", description='" + this.getDescription() + '\'' +
                 ", taskId=" + this.getTaskId() +
                 ", epicId=" + epicId +
-                ", taskStatus=" + taskStatus +
+                ", taskStatus=" + this.getTaskStatus() +
                 '}';
     }
 }

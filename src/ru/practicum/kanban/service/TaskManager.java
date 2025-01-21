@@ -26,11 +26,16 @@ public class TaskManager {
     public void addTask(Task task) {
         if (task.getClass().equals(Task.class)) {
             tasks.put(task.getTaskId(), task);
+
         } else if (task.getClass().equals(Epic.class)) {
             epics.put(task.getTaskId(), (Epic) task);
+
         } else if (task.getClass().equals(SubTask.class)) {
+            int epicId = ((SubTask) task).getEpicId();
+            Epic epic = epics.get(epicId);
+
+            epic.addSubTaskId(task.getTaskId());
             subTasks.put(task.getTaskId(), (SubTask) task);
-            epics.get(((SubTask) task).getEpicId()).addSubTaskId(task.getTaskId());
         }
     }
 
@@ -42,13 +47,15 @@ public class TaskManager {
         return this.toString();
     }
 
-    public Task getTask(Task task) {
-        if (task.getClass().equals(Task.class)) {
-            return tasks.get(task.getTaskId());
-        } else if (task.getClass().equals(Epic.class)) {
-            return epics.get(task.getTaskId());
-        } else if (task.getClass().equals(SubTask.class)) {
-            return subTasks.get(task.getTaskId());
+    public Task getTaskById(int taskId) {
+        if (tasks.containsKey(taskId)) {
+            return tasks.get(taskId);
+
+        } else if (epics.containsKey(taskId)) {
+            return epics.get(taskId);
+
+        } else if (subTasks.containsKey(taskId)) {
+            return subTasks.get(taskId);
         }
         return null;
     }
@@ -60,16 +67,19 @@ public class TaskManager {
         taskCounter = 0;
     }
 
-    public void removeTask(Task task) {
-        if (task.getClass().equals(Task.class)) {
-            tasks.remove(task.getTaskId());
-        } else if (task.getClass().equals(Epic.class)) {
-            epics.remove(task.getTaskId());
-        } else if (task.getClass().equals(SubTask.class)) {
-            Epic epic = epics.get(((SubTask) task).getEpicId());
+    public void removeTaskById(int taskId) {
+        if (tasks.containsKey(taskId)) {
+            tasks.remove(taskId);
+        } else if (epics.containsKey(taskId)) {
+            epics.remove(taskId);
+        } else if (subTasks.containsKey(taskId)) {
+            int epicId = subTasks.get(taskId).getEpicId();
+            Epic epic = epics.get(epicId);
 
-            epic.removeSubTaskById(task.getTaskId());
-            subTasks.remove(task.getTaskId());
+            epic.removeSubTaskById(taskId);
+            subTasks.remove(taskId);
+        } else {
+            System.out.println("Task not found");
         }
     }
 
@@ -84,40 +94,60 @@ public class TaskManager {
         return true;
     }
 
-    public void updateTask(Task task) {  //automatic task status update
-        final int taskId = task.getTaskId();
-
+    public void update(Task task) {
         if (task.getClass().equals(Task.class)) {
-            if (tasks.containsKey(taskId) && (task.getTaskStatus() != TaskStatus.DONE)) {
-                tasks.put(taskId, new Task(tasks.get(taskId)));
-            }
+            updateTask(task);
+
         } else if (task.getClass().equals(Epic.class)) {
-            if (epics.containsKey(taskId) && ((task.getTaskStatus() != TaskStatus.DONE))) {
-                if (task.getTaskStatus() == TaskStatus.NEW) {
-                    epics.put(taskId, new Epic((Epic) task)); //setting epic status IN_PROGRESS
+            updateEpic((Epic) task);
 
-                    if (!((Epic) task).getSubTasksIds().isEmpty()) { //updating subtask statuses
-                        for (int subTaskId : ((Epic) task).getSubTasksIds()) {
-                            subTasks.put(subTaskId, new SubTask(subTasks.get(subTaskId), taskId));
-                        }
-                    }
-                } else if (task.getTaskStatus() == TaskStatus.IN_PROGRESS && ((Epic) task).isDone()) {
-                    epics.put(task.getTaskId(), new Epic((Epic) task));
-                }
-            }
         } else if (task.getClass().equals(SubTask.class)) {
-            final Epic epic = epics.get(((SubTask) task).getEpicId());
-
-            if (subTasks.containsKey(taskId)) {
-                subTasks.put(taskId, new SubTask((SubTask) task, ((SubTask) task).getEpicId()));
-
-                if (subTasksIsDone(epic)) {  //check epic status after subtask update
-                    updateTask(epic);
-                }
-            }
+            updateSubtask((SubTask) task);
         }
 
     }
+
+    private void updateTask(Task task) {
+        final int taskId = task.getTaskId();
+
+        if (tasks.containsKey(taskId)) {
+            tasks.put(taskId, new Task(task));
+        }
+    }
+
+    private void updateEpic(Epic epic) {
+        final int taskId = epic.getTaskId();
+        final TaskStatus taskStatus = epic.getTaskStatus();
+
+        if (epics.containsKey(taskId)) {
+            if (taskStatus == TaskStatus.DONE) {
+                if (subTasksIsDone(epic)) {
+                    epics.put(taskId, new Epic(epic, TaskStatus.DONE));
+                } else {
+                    System.out.println("The status \"Done\" cannot be set until the subtasks are completed.");
+                }
+            } else {
+                epics.put(taskId, new Epic(epic));
+            }
+        }
+    }
+
+    private void updateSubtask(SubTask subTask) {
+        final int taskId = subTask.getTaskId();
+        final int epicId = subTask.getEpicId();
+        final Epic epic = epics.get(epicId);
+
+        if (subTasks.containsKey(taskId)) {
+            subTasks.put(taskId, new SubTask(subTask));
+
+            //check epic status after subtask update
+            if (subTask.getTaskStatus() == TaskStatus.DONE && subTasksIsDone(epic)) {
+                epic.setDone(true);
+                updateEpic(new Epic(epic, TaskStatus.DONE));
+            }
+        }
+    }
+
 
     @Override
     public String toString() {
@@ -125,7 +155,6 @@ public class TaskManager {
                 "tasks=" + tasks +
                 ", epics=" + epics +
                 ", subTasks=" + subTasks +
-                ", taskCounter=" + taskCounter +
                 '}';
     }
 }
