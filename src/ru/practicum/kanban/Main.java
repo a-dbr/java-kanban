@@ -1,15 +1,16 @@
 package ru.practicum.kanban;
 
+import ru.practicum.kanban.service.Managers;
 import ru.practicum.kanban.service.TaskManager;
 import ru.practicum.kanban.status.TaskStatus;
-import ru.practicum.kanban.tasks.Epic;
-import ru.practicum.kanban.tasks.SubTask;
-import ru.practicum.kanban.tasks.Task;
+import ru.practicum.kanban.model.Epic;
+import ru.practicum.kanban.model.SubTask;
+import ru.practicum.kanban.model.Task;
 
 public class Main {
 
     public static void main(String[] args) {
-        TaskManager taskManager = new TaskManager();
+        TaskManager taskManager = Managers.getDefault();
 
         Task task1 = new Task("Task name", "Task description");
         taskManager.addTask(task1);
@@ -72,16 +73,23 @@ public class Main {
         System.out.println(task2);
         System.out.println();
 
-        Task task3 = new Task("Жывтоне чочо упячка", "Шячло попячтса");
+        Task task3 = new Task("Task3", "Description");
         taskManager.addTask(task3);
 
         taskManager.removeTaskById(task3.getTaskId());
         taskManager.removeTaskById(subTask2.getTaskId());
 
+        System.out.println();
+        System.out.println("История просмотров:");
+        System.out.println(taskManager.getHistory());
+        System.out.println();
+
+        System.out.println("AllTasks");
         System.out.println(taskManager.getAllTasks());
         System.out.println();
 
         taskManager.removeAllTasks();
+        System.out.println("AllTasks(empty)");
         System.out.println(taskManager.getAllTasks());
     }
 }

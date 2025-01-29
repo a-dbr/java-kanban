@@ -1,12 +1,9 @@
-package ru.practicum.kanban.tasks;
+package ru.practicum.kanban.model;
 
 import ru.practicum.kanban.service.TaskManager;
 import ru.practicum.kanban.status.TaskStatus;
 
 import java.util.Objects;
-
-//Для ревьюера: Перечитал внимательно условие задачи. Обновление свойств класса через создание новых объектов.
-//Поэтому все поля сделал final.
 
 public class Task {
     private final String name;

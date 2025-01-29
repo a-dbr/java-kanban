@@ -1,4 +1,4 @@
-package ru.practicum.kanban.tasks;
+package ru.practicum.kanban.model;
 
 import ru.practicum.kanban.status.TaskStatus;
 
