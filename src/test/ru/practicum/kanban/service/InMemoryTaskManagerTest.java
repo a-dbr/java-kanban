@@ -8,6 +8,10 @@ import ru.practicum.kanban.model.Task;
 import ru.practicum.kanban.status.TaskStatus;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class InMemoryTaskManagerTest {
 
@@ -26,7 +30,7 @@ class InMemoryTaskManagerTest {
     void addTask() {
         Task sameTask = taskManager.getTaskById(task.getTaskId());
 
-        Assertions.assertEquals(1, taskManager.getAllTasks().size(),
+        assertEquals(1, taskManager.getAllTasks().size(),
                 "The task wasn't added to the list.");
 
         Assertions.assertSame(task, sameTask,
@@ -38,7 +42,7 @@ class InMemoryTaskManagerTest {
         epic = new Epic("Epic", "Test epic description");
         taskManager.addTask(epic);
 
-        Assertions.assertEquals(2, taskManager.getAllTasks().size(),
+        assertEquals(2, taskManager.getAllTasks().size(),
                 "getAllTasks() returned an incorrect number of tasks");
     }
 
@@ -48,9 +52,13 @@ class InMemoryTaskManagerTest {
 
         Task testTask1 = taskManager.getTaskById(taskId);
         Task testTask2 = taskManager.getTaskById(taskId);
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> {
+            taskManager.getTaskById(-1);
+        });
 
         Assertions.assertSame(testTask1, testTask2,
                 "The returned objects must be the same.");
+        assertEquals("Task with ID -1 not found.", exception.getMessage());
     }
 
     @Test
@@ -67,8 +75,11 @@ class InMemoryTaskManagerTest {
     void removeTaskById() {
         int taskId = task.getTaskId();
         taskManager.removeTaskById(taskId);
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> {
+            taskManager.getTaskById(taskId);
+        });
 
-        Assertions.assertNull(taskManager.getTaskById(taskId));
+        assertEquals("Task with ID " + taskId + " not found.", exception.getMessage());
     }
 
     @Test

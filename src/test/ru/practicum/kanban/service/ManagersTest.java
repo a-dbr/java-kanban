@@ -19,7 +19,7 @@ class ManagersTest {
         TaskManager taskManager1 = Managers.getDefault();
         TaskManager taskManager2 = Managers.getDefault();
 
-        Assertions.assertNotEquals(taskManager1, taskManager2,
+        Assertions.assertNotSame(taskManager1, taskManager2,
                 "getDefault() should return different objects");
     }
 

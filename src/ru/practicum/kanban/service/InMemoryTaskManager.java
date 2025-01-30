@@ -5,10 +5,7 @@ import ru.practicum.kanban.model.Epic;
 import ru.practicum.kanban.model.SubTask;
 import ru.practicum.kanban.model.Task;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
 
@@ -79,7 +76,8 @@ public class InMemoryTaskManager implements TaskManager {
             historyManager.addTask(subTasks.get(taskId));
             return subTasks.get(taskId);
         }
-        return null;
+        // If the task is not found, throw an exception.
+        throw new NoSuchElementException("Task with ID " + taskId + " not found.");
     }
 
     @Override
