@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.practicum.kanban.model.Epic;
+import ru.practicum.kanban.model.SubTask;
 import ru.practicum.kanban.model.Task;
 import ru.practicum.kanban.status.TaskStatus;
 
@@ -20,7 +21,7 @@ class InMemoryTaskManagerTest {
     Task epic;
 
     @BeforeEach
-    public void beforeEach() {
+    void beforeEach() {
         taskManager = Managers.getDefault();
         task = new Task("Task", "Test task description");
         taskManager.addTask(task);
@@ -93,5 +94,15 @@ class InMemoryTaskManagerTest {
         Task newTask = taskManager.getTaskById(taskId);
 
         Assertions.assertNotSame(newTask, oldTask, "The objects must be different");
+    }
+
+    @Test
+    void checkAddingSubtaskWithTaskId() {
+        Task subTask = new SubTask("Name", "Description", task.getTaskId());
+        taskManager.addTask(subTask);
+        List<Task> taskList = taskManager.getAllTasks();
+
+        Assertions.assertFalse(taskList.contains(subTask),
+                "Isn't possible to add a subtask with an identifier other than that of an existing epic.");
     }
 }
