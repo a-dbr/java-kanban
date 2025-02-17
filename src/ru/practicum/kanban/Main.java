@@ -23,7 +23,6 @@ public class Main {
                 TaskStatus.IN_PROGRESS,  //Setting a new task status
                 task1.getTaskId() //We MUST take the taskID from the original task.
         );
-        
         taskManager.update(newTask1);
         System.out.println(taskManager.getTaskById(task1.getTaskId())); //print
         //Done
