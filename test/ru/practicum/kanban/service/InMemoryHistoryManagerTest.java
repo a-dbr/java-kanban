@@ -28,21 +28,19 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
-    void shouldDeleteTheOldestTaskWhenThereAreMore10Tasks() {
+    void shouldNotDeleteTheOldestTaskWhenThereAreMore10Tasks() {
         Task task;
-        for (int i = 0; i < 11; i++) {
+        for (int i = 0; i < 20; i++) {
             task = new Task("Task", String.valueOf(i));
             taskManager.addTask(task);
             taskManager.getTaskById(task.getTaskId());
         }
-        task = taskManager.getHistory().getFirst();
-        String description = task.getDescription();
-
-        Assertions.assertEquals("1", description, "The values in the history manager don't match");
+        int size = taskManager.getHistory().size();
+        Assertions.assertEquals(20, size, "The values in the history manager don't match");
     }
 
     @Test
-    void getHistory() {
+    void shouldNotReturnDuplicateBrowsingHistories() {
         task = new Task("Task", "Test task description");
         taskManager.addTask(task);
         task = taskManager.getTaskById(task.getTaskId());
@@ -51,10 +49,7 @@ class InMemoryHistoryManagerTest {
         task = taskManager.getTaskById(task.getTaskId());
         List<Task> history = taskManager.getHistory();
 
-        Assertions.assertEquals(2, history.size(),
+        Assertions.assertEquals(1, history.size(),
                 "The returned number of requests doesn't match the expected number.");
-
-        Assertions.assertNotSame(history.get(0), history.get(1),
-                "Returned tasks should be different");
     }
 }
