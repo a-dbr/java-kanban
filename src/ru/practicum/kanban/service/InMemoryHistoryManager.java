@@ -2,10 +2,7 @@ package ru.practicum.kanban.service;
 
 import ru.practicum.kanban.model.Task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class InMemoryHistoryManager implements HistoryManager {
     private final CustomLinkedList history = new CustomLinkedList();
@@ -22,13 +19,17 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void remove(int id) {
-        history.removeNode(id);
+        history.removeNodeById(id);
+    }
+
+    @Override
+    public void removeAll() {
+        history.removeAllNodes();
     }
 
     class CustomLinkedList {
         private Node<Task> head;
         private Node<Task> tail;
-        int size;
 
         Map<Integer, Node<Task>> nodesId = new HashMap<>();
 
@@ -55,29 +56,37 @@ public class InMemoryHistoryManager implements HistoryManager {
             } else {
                 oldTail.setNext(newNode);
             }
-            size++;
 
             nodesId.put(task.getTaskId(), newNode);
         }
 
-        public void removeNode(int id) {
+        public void removeAllNodes() {
+            for (Node<Task> node : nodesId.values()) {
+                removeNode(node);
+            }
+            nodesId.clear();
+        }
+
+        public void removeNodeById(int id) {
             removeNode(nodesId.get(id));
         }
 
         public void removeNode(Node<Task> node) {
-            Node<Task> prev = node.getPrev();
-            Node<Task> next = node.getNext();
+            if (node != null) {
+                Node<Task> prev = node.getPrev();
+                Node<Task> next = node.getNext();
 
-            if (prev == null) {
-                head = next;
-            } else {
-                prev.setNext(next);
-            }
+                if (prev == null) {
+                    head = next;
+                } else {
+                    prev.setNext(next);
+                }
 
-            if (next == null) {
-                tail = prev;
-            } else {
-                next.setPrev(prev);
+                if (next == null) {
+                    tail = prev;
+                } else {
+                    next.setPrev(prev);
+                }
             }
         }
     }

@@ -12,6 +12,7 @@ public class Main {
     public static void main(String[] args) {
         TaskManager taskManager = Managers.getDefault();
 
+        System.out.println("Adding a task and changing the status:");
         Task task1 = new Task("Task name", "Task description");
         taskManager.addTask(task1);
         System.out.println(taskManager.getTaskById(task1.getTaskId()));
@@ -25,9 +26,11 @@ public class Main {
         );
         taskManager.update(newTask1);
         System.out.println(taskManager.getTaskById(task1.getTaskId())); //print
+        System.out.println();
         //Done
 
         // test
+        System.out.println("Adding an epic, subtasks, and changing the status:");
         Task task2 = new Epic("Task2 name", "Task2 description");
         Task subTask1 = new SubTask("Subtask1", "Subtask1 description", task2.getTaskId());
         Task subTask2 = new SubTask("Subtask2", "Subtask2 description", task2.getTaskId());
@@ -71,14 +74,19 @@ public class Main {
         System.out.println(task2);
         System.out.println();
 
+        System.out.println("Deleting a task and deleting a task from the browsing history:");
         Task task3 = new Task("Task3", "Description");
         taskManager.addTask(task3);
+        task3 = taskManager.getTaskById(task3.getTaskId());
+        System.out.println(task3);
+        System.out.println("Browsing history:");
+        System.out.println(taskManager.getHistory());
+        System.out.println();
 
         taskManager.removeTaskById(task3.getTaskId());
         taskManager.removeTaskById(subTask2.getTaskId());
 
-        System.out.println();
-        System.out.println("История просмотров:");
+        System.out.println("Browsing history after deleting a task:");
         System.out.println(taskManager.getHistory());
         System.out.println();
 
@@ -89,5 +97,9 @@ public class Main {
         taskManager.removeAllTasks();
         System.out.println("AllTasks(empty)");
         System.out.println(taskManager.getAllTasks());
+
+        System.out.println("Browsing history:");
+        System.out.println(taskManager.getHistory());
+        System.out.println();
     }
 }

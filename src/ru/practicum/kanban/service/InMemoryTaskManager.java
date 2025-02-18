@@ -87,6 +87,7 @@ public class InMemoryTaskManager implements TaskManager {
         tasks.clear();
         epics.clear();
         subTasks.clear();
+        historyManager.removeAll();
         taskCounter = 0;
     }
 
@@ -94,14 +95,17 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeTaskById(int taskId) {
         if (tasks.containsKey(taskId)) {
             tasks.remove(taskId);
+            historyManager.remove(taskId);
         } else if (epics.containsKey(taskId)) {
             epics.remove(taskId);
+            historyManager.remove(taskId);
         } else if (subTasks.containsKey(taskId)) {
             int epicId = subTasks.get(taskId).getEpicId();
             Epic epic = epics.get(epicId);
 
             epic.removeSubTaskById(taskId);
             subTasks.remove(taskId);
+            historyManager.remove(taskId);
         } else {
             System.out.println("Task not found");
         }
