@@ -114,7 +114,6 @@ public class InMemoryTaskManager implements TaskManager {
                 return false;
             }
         }
-        epic.setDone(true);
         return true;
     }
 
@@ -167,7 +166,6 @@ public class InMemoryTaskManager implements TaskManager {
 
             //check epic status after subtask update
             if (subTask.getTaskStatus() == TaskStatus.DONE && subTasksIsDone(epic)) {
-                epic.setDone(true);
                 updateEpic(new Epic(epic, TaskStatus.DONE));
             }
         }

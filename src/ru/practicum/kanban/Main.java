@@ -44,8 +44,7 @@ public class Main {
                 task2.getDescription(),
                 TaskStatus.IN_PROGRESS,
                 task2.getTaskId(),
-                ((Epic) task2).getSubTasksIds(),
-                ((Epic) task2).isDone()
+                ((Epic) task2).getSubTasksIds()
         ));
 
         task2 = taskManager.getTaskById(task2.getTaskId());
