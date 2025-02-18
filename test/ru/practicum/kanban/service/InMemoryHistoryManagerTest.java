@@ -24,12 +24,34 @@ class InMemoryHistoryManagerTest {
         taskManager.addTask(task);
         taskManager.getTaskById(task.getTaskId());
 
-        Assertions.assertEquals(1, taskManager.getHistory().size());
+        Assertions.assertTrue(taskManager.getHistory().contains(task));
+    }
+
+    @Test
+    void removeTask() {
+        task = new Task("Task", "Test task description");
+        taskManager.addTask(task);
+        taskManager.getTaskById(task.getTaskId());
+        taskManager.removeTaskById(task.getTaskId());
+
+        Assertions.assertFalse(taskManager.getHistory().contains(task));
+    }
+
+    @Test
+    void removeAllTasks() {
+        for (int i = 0; i < 20; i++) {
+            task = new Task("Task", String.valueOf(i));
+            taskManager.addTask(task);
+            taskManager.getTaskById(task.getTaskId());
+        }
+        taskManager.removeAllTasks();
+
+        int size = taskManager.getHistory().size();
+        Assertions.assertEquals(0, size);
     }
 
     @Test
     void shouldNotDeleteTheOldestTaskWhenThereAreMore10Tasks() {
-        Task task;
         for (int i = 0; i < 20; i++) {
             task = new Task("Task", String.valueOf(i));
             taskManager.addTask(task);
