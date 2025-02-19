@@ -7,7 +7,6 @@ import java.util.List;
 
 
 public class Epic extends Task {
-    private boolean isDone = false;
     private List<Integer> subTasksIds;
 
     public Epic(String name, String description) {
@@ -29,12 +28,11 @@ public class Epic extends Task {
             String description,
             TaskStatus taskStatus,
             int taskId,
-            List<Integer> subTasksIds,
-            boolean isDone) {
+            List<Integer> subTasksIds) {
 
         this(name, description, taskStatus, taskId);
 
-        this.isDone = isDone;
+
         this.subTasksIds = subTasksIds;
     }
 
@@ -44,8 +42,7 @@ public class Epic extends Task {
                 epic.getDescription(),
                 epic.getTaskStatus(),
                 epic.getTaskId(),
-                epic.subTasksIds,
-                epic.isDone());
+                epic.subTasksIds);
     }
 
     public Epic(Epic epic, TaskStatus taskStatus) {
@@ -54,8 +51,7 @@ public class Epic extends Task {
                 epic.getDescription(),
                 taskStatus,
                 epic.getTaskId(),
-                epic.subTasksIds,
-                epic.isDone());
+                epic.subTasksIds);
     }
 
     public List<Integer> getSubTasksIds() {
@@ -70,21 +66,12 @@ public class Epic extends Task {
         subTasksIds.remove(subTaskId);
     }
 
-    public boolean isDone() {
-        return isDone;
-    }
-
-    public void setDone(boolean done) {
-        isDone = done;
-    }
-
     @Override
     public String toString() {
         return "Epic{" +
                 "name='" + getName() + '\'' +
                 ", description='" + this.getDescription() + '\'' +
                 ", taskId=" + this.getTaskId() +
-                ", isDone=" + isDone +
                 ", subTasksIds=" + subTasksIds +
                 ", taskStatus=" + this.getTaskStatus() +
                 '}';

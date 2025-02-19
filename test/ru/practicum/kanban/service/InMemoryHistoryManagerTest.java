@@ -24,25 +24,45 @@ class InMemoryHistoryManagerTest {
         taskManager.addTask(task);
         taskManager.getTaskById(task.getTaskId());
 
-        Assertions.assertEquals(1, taskManager.getHistory().size());
+        Assertions.assertTrue(taskManager.getHistory().contains(task));
     }
 
     @Test
-    void shouldDeleteTheOldestTaskWhenThereAreMore10Tasks() {
-        Task task;
-        for (int i = 0; i < 11; i++) {
+    void removeTask() {
+        task = new Task("Task", "Test task description");
+        taskManager.addTask(task);
+        taskManager.getTaskById(task.getTaskId());
+        taskManager.removeTaskById(task.getTaskId());
+
+        Assertions.assertFalse(taskManager.getHistory().contains(task));
+    }
+
+    @Test
+    void removeAllTasks() {
+        for (int i = 0; i < 20; i++) {
             task = new Task("Task", String.valueOf(i));
             taskManager.addTask(task);
             taskManager.getTaskById(task.getTaskId());
         }
-        task = taskManager.getHistory().getFirst();
-        String description = task.getDescription();
+        taskManager.removeAllTasks();
 
-        Assertions.assertEquals("1", description, "The values in the history manager don't match");
+        int size = taskManager.getHistory().size();
+        Assertions.assertEquals(0, size);
     }
 
     @Test
-    void getHistory() {
+    void shouldNotDeleteTheOldestTaskWhenThereAreMore10Tasks() {
+        for (int i = 0; i < 20; i++) {
+            task = new Task("Task", String.valueOf(i));
+            taskManager.addTask(task);
+            taskManager.getTaskById(task.getTaskId());
+        }
+        int size = taskManager.getHistory().size();
+        Assertions.assertEquals(20, size, "The values in the history manager don't match");
+    }
+
+    @Test
+    void shouldNotReturnDuplicateBrowsingHistories() {
         task = new Task("Task", "Test task description");
         taskManager.addTask(task);
         task = taskManager.getTaskById(task.getTaskId());
@@ -51,10 +71,7 @@ class InMemoryHistoryManagerTest {
         task = taskManager.getTaskById(task.getTaskId());
         List<Task> history = taskManager.getHistory();
 
-        Assertions.assertEquals(2, history.size(),
+        Assertions.assertEquals(1, history.size(),
                 "The returned number of requests doesn't match the expected number.");
-
-        Assertions.assertNotSame(history.get(0), history.get(1),
-                "Returned tasks should be different");
     }
 }
