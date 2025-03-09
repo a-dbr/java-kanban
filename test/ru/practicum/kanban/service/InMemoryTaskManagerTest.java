@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import ru.practicum.kanban.model.Epic;
 import ru.practicum.kanban.model.SubTask;
 import ru.practicum.kanban.model.Task;
-import ru.practicum.kanban.status.TaskStatus;
+import ru.practicum.kanban.model.enums.TaskStatus;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -53,9 +53,8 @@ class InMemoryTaskManagerTest {
 
         Task testTask1 = taskManager.getTaskById(taskId);
         Task testTask2 = taskManager.getTaskById(taskId);
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> {
-            taskManager.getTaskById(-1);
-        });
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
+            taskManager.getTaskById(-1));
 
         Assertions.assertSame(testTask1, testTask2,
                 "The returned objects must be the same.");
@@ -76,9 +75,8 @@ class InMemoryTaskManagerTest {
     void removeTaskById() {
         int taskId = task.getTaskId();
         taskManager.removeTaskById(taskId);
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> {
-            taskManager.getTaskById(taskId);
-        });
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
+            taskManager.getTaskById(taskId));
 
         assertEquals("Task with ID " + taskId + " not found.", exception.getMessage());
     }

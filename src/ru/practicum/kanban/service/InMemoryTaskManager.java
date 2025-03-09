@@ -1,6 +1,6 @@
 package ru.practicum.kanban.service;
 
-import ru.practicum.kanban.status.TaskStatus;
+import ru.practicum.kanban.model.enums.TaskStatus;
 import ru.practicum.kanban.model.Epic;
 import ru.practicum.kanban.model.SubTask;
 import ru.practicum.kanban.model.Task;
@@ -24,7 +24,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void addTask(Task task) {
+    public void addTask(Task task)  {
         if (task.getClass().equals(Task.class)) {
             tasks.put(task.getTaskId(), task);
 
@@ -97,6 +97,14 @@ public class InMemoryTaskManager implements TaskManager {
             tasks.remove(taskId);
             historyManager.remove(taskId);
         } else if (epics.containsKey(taskId)) {
+            // If the epic contains subtasks, remove them first.
+            List<Integer> subTaskIds = epics.get(taskId).getSubTasksIds();
+            if (!subTaskIds.isEmpty()) {
+                for (int subTaskId : subTaskIds) {
+                    removeTaskById(subTaskId);
+                }
+            }
+
             epics.remove(taskId);
             historyManager.remove(taskId);
         } else if (subTasks.containsKey(taskId)) {
