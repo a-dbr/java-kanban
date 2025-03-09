@@ -2,15 +2,23 @@ package ru.practicum.kanban;
 
 import ru.practicum.kanban.service.Managers;
 import ru.practicum.kanban.service.TaskManager;
-import ru.practicum.kanban.status.TaskStatus;
+import ru.practicum.kanban.model.enums.TaskStatus;
 import ru.practicum.kanban.model.Epic;
 import ru.practicum.kanban.model.SubTask;
 import ru.practicum.kanban.model.Task;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class Main {
 
+    private final static String FILE_NAME = "./src/ru/practicum/kanban/resources/db.csv";
+
     public static void main(String[] args) {
-        TaskManager taskManager = Managers.getDefault();
+
+        Path file = Paths.get(FILE_NAME);
+
+        TaskManager taskManager = Managers.getDefault(file);
 
         System.out.println("Adding a task and changing the status:");
         Task task1 = new Task("Task name", "Task description");
@@ -84,7 +92,7 @@ public class Main {
         System.out.println();
 
         taskManager.removeTaskById(task3.getTaskId());
-        taskManager.removeTaskById(subTask2.getTaskId());
+        //taskManager.removeTaskById(subTask2.getTaskId());
 
         System.out.println("Browsing history after deleting a task:");
         System.out.println(taskManager.getHistory());
