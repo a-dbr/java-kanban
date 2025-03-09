@@ -25,6 +25,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public FileBackedTaskManager(Path file) {
         this.file = file;
         try {
+            Path resourcesDir = Paths.get("./src/ru/practicum/kanban/resources/");
+            if (Files.notExists(resourcesDir)) {
+                Files.createDirectory(resourcesDir);
+            }
+
             if (Files.exists(file) && Files.size(file) != 0) {
                 loadFromFile();
                 taskCounter = loadTaskCounterFromFile();
@@ -124,6 +129,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private void saveTaskCounter() throws ManagerSaveException {
         try {
+            if (Files.notExists(taskCounterFile)) {
+                Files.createFile(taskCounterFile);
+            }
             Files.writeString(taskCounterFile, ((Integer) taskCounter).toString());
         } catch (IOException e) {
             throw new ManagerLoadException("Error writing task counter file: " + e.getMessage());

@@ -11,7 +11,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 class FileBackedTaskManagerTest {
     TaskManager taskManager;
-    static final Path tempDir = Path.of("./test/temp");
+    static final Path tempDir = Paths.get("./test/temp");
     Path tempFilePath;
 
     @BeforeEach
