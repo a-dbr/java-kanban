@@ -12,11 +12,10 @@ import java.nio.file.Paths;
 
 public class Main {
 
-    private final static String FILE_NAME = "./src/ru/practicum/kanban/resources/db.csv";
-
     public static void main(String[] args) {
 
-        Path file = Paths.get(FILE_NAME);
+        final String fileName = "./src/ru/practicum/kanban/resources/db.csv";
+        Path file = Paths.get(fileName);
 
         TaskManager taskManager = Managers.getDefault(file);
 
