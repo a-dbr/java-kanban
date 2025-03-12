@@ -2,15 +2,16 @@ package ru.practicum.kanban.service;
 
 import ru.practicum.kanban.model.Task;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
@@ -20,6 +21,8 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class FileBackedTaskManagerTest {
     TaskManager taskManager;
     static final Path tempDir = Paths.get("./test/temp");
@@ -27,6 +30,10 @@ class FileBackedTaskManagerTest {
 
     @BeforeEach
     void beforeEach() throws IOException {
+        String simulatedInput = "y\n";
+        InputStream in = new ByteArrayInputStream(simulatedInput.getBytes());
+        System.setIn(in);
+
         if (Files.notExists(tempDir)) {
             Files.createDirectory(tempDir);
         }
@@ -51,9 +58,8 @@ class FileBackedTaskManagerTest {
     }
     @Test
     void loadEmptyFile() {
-        assertTrue(taskManager.getAllTasks().isEmpty());
+        Assertions.assertTrue(((FileBackedTaskManager) taskManager).exceptionCaught);
     }
-
     @Test
     void addTask() throws IOException {
         Task task = new Task("Task", "Test task description");

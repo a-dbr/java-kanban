@@ -22,6 +22,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     private final String taskIdCounterFileName = "./src/ru/practicum/kanban/resources/task_id_counter.csv";
     private final Path taskCounterFile = Paths.get(taskIdCounterFileName);
     private final Path file;
+    boolean exceptionCaught = false;
 
     public FileBackedTaskManager(Path file) {
         this.file = file;
@@ -38,6 +39,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         } catch (IOException e) {
             throw new ManagerLoadException("File reading error: " + e.getMessage());
         } catch (ManagerLoadException e) {
+            exceptionCaught = true;
             Scanner scanner = new Scanner(System.in);
             System.out.println(e.getMessage() + "\n");
             while (true) {
@@ -53,7 +55,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         System.out.println("Incorrect input");
                 }
             }
-
         }
     }
 
