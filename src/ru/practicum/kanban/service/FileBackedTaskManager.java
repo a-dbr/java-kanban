@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Scanner;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
@@ -30,12 +31,29 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 Files.createDirectory(resourcesDir);
             }
 
-            if (Files.exists(file) && Files.size(file) != 0) {
+            if (Files.exists(file)) {
                 loadFromFile();
                 taskCounter = loadTaskCounterFromFile();
             }
         } catch (IOException e) {
             throw new ManagerLoadException("File reading error: " + e.getMessage());
+        } catch (ManagerLoadException e) {
+            Scanner scanner = new Scanner(System.in);
+            System.out.println(e.getMessage() + "\n");
+            while (true) {
+                System.out.println("Continue and overwrite the file?");
+                System.out.println("Type 'y/n':");
+                String input = scanner.nextLine();
+                switch (input) {
+                    case "y":
+                        return;
+                    case "n":
+                        System.exit(1);
+                    default:
+                        System.out.println("Incorrect input");
+                }
+            }
+
         }
     }
 
@@ -72,17 +90,19 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         throw new NoSuchElementException("Error loading data from string.");
     }
 
-    private void loadFromFile() throws IOException {
-        // Ревьюеру: если бы работал с sql, сделал бы загрузку напрямую в мапы.
-
-        final List<String> data = Files.readAllLines(file);
-        for (int i = 1; i < data.size(); i++) { // first line is header
-            try {
-                Task task = fromString(data.get(i));
-                super.addTask(task);
-            } catch (NoSuchElementException e) {
-                System.out.println(e.getMessage());
+    private void loadFromFile() throws IOException, ManagerSaveException {
+        if (Files.size(file) != 0) {
+            final List<String> data = Files.readAllLines(file);
+            for (int i = 1; i < data.size(); i++) { // first line is header
+                try {
+                    Task task = fromString(data.get(i));
+                    super.addTask(task);
+                } catch (NoSuchElementException e) {
+                    System.out.println(e.getMessage());
+                }
             }
+        } else {
+            throw new ManagerLoadException("File " + file + " is empty");
         }
     }
 
@@ -127,14 +147,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    private void saveTaskCounter() throws ManagerSaveException {
+    private void saveTaskCounter() {
         try {
             if (Files.notExists(taskCounterFile)) {
                 Files.createFile(taskCounterFile);
             }
             Files.writeString(taskCounterFile, ((Integer) taskCounter).toString());
         } catch (IOException e) {
-            throw new ManagerLoadException("Error writing task counter file: " + e.getMessage());
+            throw new ManagerSaveException("Error writing task counter file: " + e.getMessage());
         }
     }
 
