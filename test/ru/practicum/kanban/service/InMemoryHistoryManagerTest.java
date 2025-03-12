@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.practicum.kanban.model.Task;
-import ru.practicum.kanban.status.TaskStatus;
+import ru.practicum.kanban.model.enums.TaskStatus;
 
 import java.util.List;
 

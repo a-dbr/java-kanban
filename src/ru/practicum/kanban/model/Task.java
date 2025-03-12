@@ -1,7 +1,8 @@
 package ru.practicum.kanban.model;
 
+import ru.practicum.kanban.model.enums.TaskType;
 import ru.practicum.kanban.service.TaskManager;
-import ru.practicum.kanban.status.TaskStatus;
+import ru.practicum.kanban.model.enums.TaskStatus;
 
 import java.util.Objects;
 
@@ -47,12 +48,11 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task{" +
-                "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", taskStatus=" + taskStatus +
-                ", taskId=" + taskId +
-                '}';
+        return taskId + "," +
+                TaskType.TASK + "," +
+                name + "," +
+                taskStatus + "," +
+                description;
     }
 
     @Override

@@ -1,17 +1,17 @@
 package ru.practicum.kanban.model;
 
-import ru.practicum.kanban.status.TaskStatus;
+import ru.practicum.kanban.model.enums.TaskStatus;
+import ru.practicum.kanban.model.enums.TaskType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class Epic extends Task {
-    private List<Integer> subTasksIds;
+    private List<Integer> subTasksIds = new ArrayList<>();
 
     public Epic(String name, String description) {
         super(name, description);
-        subTasksIds = new ArrayList<>();
     }
 
     public Epic(
@@ -68,12 +68,10 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        return "Epic{" +
-                "name='" + getName() + '\'' +
-                ", description='" + this.getDescription() + '\'' +
-                ", taskId=" + this.getTaskId() +
-                ", subTasksIds=" + subTasksIds +
-                ", taskStatus=" + this.getTaskStatus() +
-                '}';
+        return getTaskId() + "," +
+                TaskType.EPIC + "," +
+                getName() + "," +
+                getTaskStatus() + "," +
+                getDescription();
     }
 }

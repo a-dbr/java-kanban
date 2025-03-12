@@ -1,6 +1,7 @@
 package ru.practicum.kanban.model;
 
-import ru.practicum.kanban.status.TaskStatus;
+import ru.practicum.kanban.model.enums.TaskStatus;
+import ru.practicum.kanban.model.enums.TaskType;
 
 public class SubTask extends Task {
     private final int epicId;
@@ -31,12 +32,11 @@ public class SubTask extends Task {
 
     @Override
     public String toString() {
-        return "SubTask{" +
-                "name='" + this.getName() + '\'' +
-                ", description='" + this.getDescription() + '\'' +
-                ", taskId=" + this.getTaskId() +
-                ", epicId=" + epicId +
-                ", taskStatus=" + this.getTaskStatus() +
-                '}';
+        return getTaskId() + "," +
+                TaskType.SUBTASK + "," +
+                getName() + "," +
+                getTaskStatus() + "," +
+                getDescription() + "," +
+                epicId;
     }
 }
