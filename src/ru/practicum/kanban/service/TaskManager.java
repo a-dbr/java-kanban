@@ -3,6 +3,7 @@ package ru.practicum.kanban.service;
 import ru.practicum.kanban.model.Task;
 
 import java.util.List;
+import java.util.Set;
 
 public interface TaskManager {
     static int generateTaskId() {
@@ -14,6 +15,8 @@ public interface TaskManager {
     List<Task> getAllTasks();
 
     List<Task> getHistory();
+
+    Set<Task> getPrioritizedTasks();
 
     Task getTaskById(int taskId);
 
