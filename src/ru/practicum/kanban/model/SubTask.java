@@ -36,6 +36,7 @@ public class SubTask extends Task {
                 subTask.getStartTime(),
                 subTask.getDuration());
     }
+
     @Override
     public String getDataForFileSaving() {
         return getTaskId() + "," +
