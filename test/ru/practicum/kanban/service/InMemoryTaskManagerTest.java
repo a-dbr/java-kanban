@@ -2,6 +2,8 @@ package ru.practicum.kanban.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.practicum.kanban.exceptions.TaskIsOverlapException;
+import ru.practicum.kanban.model.Epic;
 import ru.practicum.kanban.model.SubTask;
 import ru.practicum.kanban.model.Task;
 
@@ -62,8 +64,6 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager>{
 
     @Test
     void checkAddingSubtaskWithTaskId() {
-        System.out.println(taskManager.getPrioritizedTasks());
-        System.out.println(taskManager.getAllTasks());
         Task subTask = new SubTask(
                 "Name",
                 "Description",
@@ -71,10 +71,57 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager>{
                 LocalDateTime.of(2025, 1, 2, 0,0),
                 Duration.ofHours(1)
         );
-        System.out.println(subTask);
+
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> {
             taskManager.addTask(subTask);
         });
         assertEquals("Unable to add subtask: an epic with this ID does not exist.", exception.getMessage());
+    }
+
+    @Test
+    void checkSubTasksTimeOverlap() {
+        Task epic = new Epic(
+                "Epic",
+                "",
+                LocalDateTime.of(1970, 1,1,0,0),
+                Duration.ofHours(24)
+        );
+        SubTask firstSubTask = new SubTask(
+                "FirstSubTask",
+                "",
+                epic.getTaskId(),
+                LocalDateTime.of(1970,1,1,0,0),
+                Duration.ofHours(24)
+        );
+
+        SubTask secondSubTask = new SubTask(
+                "SecondSubTask",
+                "",
+                epic.getTaskId(),
+                LocalDateTime.of(1970,1,1,0,0),
+                Duration.ofHours(24)
+        );
+
+        TaskIsOverlapException exception = assertThrows(TaskIsOverlapException.class, () -> {
+            taskManager.addTask(epic);
+            taskManager.addTask(firstSubTask);
+            taskManager.addTask(secondSubTask);
+        });
+        assertEquals("The added task SecondSubTask overlaps the existing task!", exception.getMessage());
+    }
+
+    @Test
+    void checkTimeOverlapBetweenTaskAndEpic() {
+        Task epic = new Epic(
+                "Epic",
+                "",
+                LocalDateTime.of(2025, 1, 1, 0,0),
+                Duration.ofHours(24)
+        );
+
+        TaskIsOverlapException exception = assertThrows(TaskIsOverlapException.class, () -> {
+            taskManager.addTask(epic);
+        });
+        assertEquals("The added task Epic overlaps the existing task!", exception.getMessage());
     }
 }
