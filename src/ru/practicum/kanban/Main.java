@@ -59,12 +59,12 @@ public class Main {
                 "Subtask1 description",
                 task2.getTaskId(),
                 LocalDateTime.of(2025, 2, 5, 0,0),
-                Duration.ofHours(10));
+                Duration.ofHours(8));
         Task subTask2 = new SubTask(
                 "Subtask2",
                 "Subtask2 description",
                 task2.getTaskId(),
-                LocalDateTime.of(2025, 3, 12, 0,0),
+                LocalDateTime.of(2025, 3, 5, 0,0),
                 Duration.ofHours(8));
 
         taskManager.addTask(task2);
@@ -132,5 +132,8 @@ public class Main {
         System.out.println("Browsing history:");
         System.out.println(taskManager.getHistory());
         System.out.println();
+
+        System.out.println("Prioritized tasks:");
+        System.out.println(taskManager.getPrioritizedTasks());
     }
 }
