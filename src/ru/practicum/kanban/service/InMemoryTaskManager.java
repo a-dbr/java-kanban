@@ -197,12 +197,6 @@ public class InMemoryTaskManager implements TaskManager {
 
             // If there are no subtasks, retain the epic's base values.
             if (subTaskIds.isEmpty()) {
-                epics.put(epicId, new Epic(
-                        epic,
-                        epic.getStartTime(),
-                        epic.getDuration(),
-                        epic.getEpicStartTime(),
-                        epic.getEpicDuration()));
                 return;
             }
 
@@ -229,6 +223,9 @@ public class InMemoryTaskManager implements TaskManager {
             // Calculate the new duration as the difference between the new start time and new end time
             Duration newDuration = Duration.between(newStartTime, newEndTime);
 
+            // Remove old epic from prioritizedTasks
+            prioritizedTasks.remove(epic);
+
             // Create a new Epic instance with updated time parameters
             epics.put(epicId, new Epic(
                     epic,
@@ -236,6 +233,9 @@ public class InMemoryTaskManager implements TaskManager {
                     newDuration,
                     epic.getEpicStartTime(),    // retain the base startTime
                     epic.getEpicDuration()));   // retain the base duration
+
+            // Add a new epic
+            prioritizedTasks.add(epics.get(epicId));
         }
     }
 
@@ -312,7 +312,9 @@ public class InMemoryTaskManager implements TaskManager {
             if (tasksIsOverlap(task)) {
                 throw new TaskIsOverlapException("The updated task overlaps the existing task!");
             } else {
-                updateTaskInPrioritizedTasks(tasks.get(taskId), task);
+                prioritizedTasks.remove(tasks.get(taskId));
+                tasks.put(taskId, new Task(task));
+                prioritizedTasks.add(task);
             }
         }
     }
@@ -332,7 +334,6 @@ public class InMemoryTaskManager implements TaskManager {
                     epics.put(epic.getTaskId(), new Epic(epic));
                 }
                 setEpicDateTime(epic.getTaskId());
-                prioritizedTasks.add(epic);
             }
         }
     }
@@ -349,22 +350,15 @@ public class InMemoryTaskManager implements TaskManager {
             } else {
                 final Epic epic = epics.get(epicId);
                 subTasks.put(taskId, new SubTask(subTask));
+                setEpicDateTime(epicId);
 
                 // Check the epic's status after updating the subtask.
                 if (subTask.getTaskStatus() == TaskStatus.DONE && subTasksIsDone(epic)) {
                     updateEpic(new Epic(epic, TaskStatus.DONE));
-                    setEpicDateTime(epicId);
                 }
             }
         } else {
             throw new NoSuchElementException("Unable to update subtask: an epic with this ID does not exist.");
         }
-    }
-
-    // Updates a task in the tasks map and in prioritizedTasks.
-    private void updateTaskInPrioritizedTasks(Task oldTask, Task newTask) {
-        prioritizedTasks.remove(oldTask);
-        tasks.put(newTask.getTaskId(), new Task(newTask));
-        prioritizedTasks.add(newTask);
     }
 }
