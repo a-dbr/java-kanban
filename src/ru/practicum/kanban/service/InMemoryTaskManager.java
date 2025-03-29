@@ -14,6 +14,7 @@ import java.util.List;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -37,8 +38,10 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     // Adds a task to the corresponding collection.
-    // The method accepts objects cast to the Task type.
-    // Subtasks are not added to the prioritizedTasks set since they are part of epics.
+    // For Epics, it checks for time interval overlap, then adds the epic to the epics collection and prioritizedTasks.
+    // For SubTasks, it verifies that the parent epic exists, then adds the subtask to the subTasks collection;
+    // its timing is managed via the parent epic, so it is not added to prioritizedTasks.
+    // For regular tasks, it performs an overlap check and then adds the task.
     @Override
     public void addTask(Task task) {
         switch (task) {
@@ -70,14 +73,18 @@ public class InMemoryTaskManager implements TaskManager {
                 }
             }
             default -> {
-                tasks.put(task.getTaskId(), task);
-                addPrioritizedTasks(task);
+                if (tasksIsOverlap(task)) {
+                    throw new TaskIsOverlapException(
+                            "The added task " + task.getName() + " overlaps the existing task!");
+                } else {
+                    tasks.put(task.getTaskId(), task);
+                    addPrioritizedTasks(task);
+                }
             }
         }
     }
 
-    // Adds a task to the prioritized set if start time and duration are specified.
-    // This is needed to ensure correct task sorting by start time.
+    // Adds a task to the prioritized set if it has a specified startTime and duration.
     private void addPrioritizedTasks(Task task) {
         if (task.getStartTime() != null && task.getDuration() != null) {
             prioritizedTasks.add(task);
@@ -100,8 +107,8 @@ public class InMemoryTaskManager implements TaskManager {
         return prioritizedTasks;
     }
 
-    // Retrieves a task by its ID, adds it to the history, and returns it.
-    // If the task is not found, an exception is thrown.
+    // Retrieves a task by its ID, adds it to the history, and returns the task.
+    // If the task is not found, it throws an exception.
     @Override
     public Task getTaskById(int taskId) {
         if (tasks.containsKey(taskId)) {
@@ -119,9 +126,21 @@ public class InMemoryTaskManager implements TaskManager {
         throw new NoSuchElementException("Task with ID " + taskId + " not found.");
     }
 
-    // Checks if a task with the same ID, startTime, and duration exists in the prioritized set.
-    // This is used to avoid rechecking time overlap when updating a task.
+    // Checks whether the given task (or its corresponding subtask within an epic)
+    // already exists in the prioritizedTasks set with the same ID, startTime, and duration.
     private boolean isExistInPrioritizedTasks(Task task) {
+        if (task instanceof SubTask subTask) {
+            Epic parentEpic = epics.get(subTask.getEpicId());
+            if (parentEpic != null) {
+                return parentEpic.getSubTasksIds().stream()
+                        .map(subTasks::get)
+                        .anyMatch(existingTask ->
+                                existingTask.getTaskId() == subTask.getTaskId() &&
+                                        existingTask.getStartTime().equals(subTask.getStartTime()) &&
+                                        existingTask.getDuration().equals(subTask.getDuration())
+                        );
+            }
+        }
         return prioritizedTasks.stream()
                 .anyMatch(existingTask -> existingTask.getTaskId() == task.getTaskId()
                         && existingTask.getStartTime().equals(task.getStartTime())
@@ -129,6 +148,7 @@ public class InMemoryTaskManager implements TaskManager {
                 );
     }
 
+    // Removes all tasks: clears the tasks, epics, subTasks, and prioritizedTasks collections, and clears the history.
     @Override
     public void removeAllTasks() {
         tasks.clear();
@@ -141,13 +161,14 @@ public class InMemoryTaskManager implements TaskManager {
 
     // Removes a task by its ID.
     // For epics, all subtasks are removed first.
+    // Also removes the task from the history.
     @Override
     public void removeTaskById(int taskId) {
         if (tasks.containsKey(taskId)) {
             tasks.remove(taskId);
             historyManager.remove(taskId);
         } else if (epics.containsKey(taskId)) {
-            // Remove subtasks of the epic before removing the epic.
+            // Remove the epic's subtasks before removing the epic.
             epics.get(taskId).getSubTasksIds().forEach(this::removeTaskById);
 
             epics.remove(taskId);
@@ -166,7 +187,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     // Updates the epic's start time and duration based on its subtasks.
-    // If no subtasks exist, the epic's original values remain unchanged.
+    // If there are no subtasks, the epic retains its original values.
     private void setEpicDateTime(int epicId) {
         if (epics.containsKey(epicId)) {
             Epic epic = epics.get(epicId);
@@ -174,7 +195,7 @@ public class InMemoryTaskManager implements TaskManager {
             LocalDateTime startTime = epic.getStartTime();
             LocalDateTime endTime = epic.getEndTime();
 
-            // If there are no subtasks, keep the epic's base values
+            // If there are no subtasks, retain the epic's base values.
             if (subTaskIds.isEmpty()) {
                 epics.put(epicId, new Epic(
                         epic,
@@ -213,11 +234,12 @@ public class InMemoryTaskManager implements TaskManager {
                     epic,
                     newStartTime,
                     newDuration,
-                    epic.getEpicStartTime(),    // keep the base start time
-                    epic.getEpicDuration()));   // keep the base duration
+                    epic.getEpicStartTime(),    // retain the base startTime
+                    epic.getEpicDuration()));   // retain the base duration
         }
     }
 
+    // Returns "true" if all subtasks of the given epic have the DONE status.
     private boolean subTasksIsDone(Epic epic) {
         return epic.getSubTasksIds().stream()
                 .map(subTasks::get)
@@ -225,39 +247,52 @@ public class InMemoryTaskManager implements TaskManager {
                 .allMatch(taskStatus -> taskStatus == TaskStatus.DONE);
     }
 
-    // Checks if the time interval of the given task overlaps with existing tasks.
-    // If the task is a subtask, its parent epic is used for overlap checking.
+    // Checks if the given task overlaps with any of the existing tasks.
+    // If the task is a subtask, its parent epic is used for the overlap check.
+    // If an identical task already exists, the overlap check is skipped.
     private boolean tasksIsOverlap(Task task) {
-        // If the task is a subtask, replace it with its parent epic for checking.
-        if (task instanceof SubTask && epics.containsKey(task.getTaskId())) {
-            task = epics.get(((SubTask) task).getEpicId());
-        }
-
-        Task finalTask = task;
-
-        // If a task with the same time parameters already exists, no further overlap check is needed.
         if (isExistInPrioritizedTasks(task)) {
             return false;
         }
 
-        // Check for time interval overlap in the prioritized tasks.
-        // For an epic with subtasks, check the time intervals of the subtasks;
-        // otherwise, check the task's own time interval.
-        return prioritizedTasks.stream()
+        LocalDateTime taskStart = task.getStartTime();
+        LocalDateTime taskEnd = task.getEndTime();
+
+        // For subtasks, save the parent epic's ID to exclude it from the check.
+        Integer epicId = null;
+        if (task instanceof SubTask subTask) {
+            epicId = subTask.getEpicId();
+        }
+        Integer parentEpicId = epicId;
+
+        // Create a stream of existing tasks, excluding any task with the same ID
+        // (to avoid checking itself during an update).
+        Stream<Task> existingTasksStream = prioritizedTasks.stream()
+                .filter(existingTask -> existingTask.getTaskId() != task.getTaskId())
                 .flatMap(existingTask -> {
-                    if (existingTask instanceof Epic && !((Epic) existingTask).getSubTasksIds().isEmpty()) {
-                        return ((Epic) existingTask).getSubTasksIds().stream()
+                    if (task instanceof SubTask
+                            && parentEpicId == existingTask.getTaskId()
+                            && existingTask instanceof Epic epic
+                            && !epic.getSubTasksIds().isEmpty()) {
+                        return epic.getSubTasksIds().stream()
                                 .map(subTasks::get)
-                                .filter(this::isExistInPrioritizedTasks); // Additionally filter subtasks present in prioritizedTasks
+                                .filter(Objects::nonNull);
                     } else {
                         return Stream.of(existingTask);
                     }
-                })
+                });
+
+        return existingTasksStream
+                // If updating a subtask, exclude the parent epic from the check.
+                .filter(existingTask -> parentEpicId == null || (!(existingTask instanceof Epic)
+                        || existingTask.getTaskId() != parentEpicId))
                 .anyMatch(existingTask ->
-                        finalTask.getStartTime().isBefore(existingTask.getEndTime())
-                                && finalTask.getEndTime().isAfter(existingTask.getStartTime()));
+                        taskStart.isBefore(existingTask.getEndTime()) &&
+                                taskEnd.isAfter(existingTask.getStartTime())
+                );
     }
 
+    // Updates a task. Dispatches the update to a specific method based on the task type.
     @Override
     public void update(Task task) {
         if (task instanceof Epic) {
@@ -269,35 +304,41 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
+    // Updates a regular task.
+    // Performs an overlap check and updates the task in both the tasks map and prioritizedTasks.
     private void updateTask(Task task) {
         final int taskId = task.getTaskId();
-
         if (tasks.containsKey(taskId)) {
             if (tasksIsOverlap(task)) {
                 throw new TaskIsOverlapException("The updated task overlaps the existing task!");
             } else {
-                tasks.put(taskId, new Task(task));
+                updateTaskInPrioritizedTasks(tasks.get(taskId), task);
             }
         }
     }
 
+    // Updates the epic's state, recalculates its time parameters, and adjusts its position in prioritizedTasks.
     private void updateEpic(Epic epic) {
         final int taskId = epic.getTaskId();
         if (epics.containsKey(taskId)) {
             if (tasksIsOverlap(epic)) {
                 throw new TaskIsOverlapException("The updated task overlaps the existing task!");
             } else {
+                prioritizedTasks.remove(epics.get(epic.getTaskId()));
+
                 if (epic.getTaskStatus() == TaskStatus.DONE && subTasksIsDone(epic)) {
                     epics.put(epic.getTaskId(), new Epic(epic, TaskStatus.DONE));
-                    setEpicDateTime(epic.getTaskId());
                 } else if (epic.getTaskStatus() != TaskStatus.DONE) {
                     epics.put(epic.getTaskId(), new Epic(epic));
-                    setEpicDateTime(epic.getTaskId());
                 }
+                setEpicDateTime(epic.getTaskId());
+                prioritizedTasks.add(epic);
             }
         }
     }
 
+    // Updates a subtask. Performs an overlap check, updates the subtask in the subTasks collection,
+    //and then updates the parent epic's status and time parameters if necessary.
     private void updateSubtask(SubTask subTask) {
         final int taskId = subTask.getTaskId();
         final int epicId = subTask.getEpicId();
@@ -309,7 +350,7 @@ public class InMemoryTaskManager implements TaskManager {
                 final Epic epic = epics.get(epicId);
                 subTasks.put(taskId, new SubTask(subTask));
 
-                // Checking the epic's status after updating a subtask.
+                // Check the epic's status after updating the subtask.
                 if (subTask.getTaskStatus() == TaskStatus.DONE && subTasksIsDone(epic)) {
                     updateEpic(new Epic(epic, TaskStatus.DONE));
                     setEpicDateTime(epicId);
@@ -318,5 +359,12 @@ public class InMemoryTaskManager implements TaskManager {
         } else {
             throw new NoSuchElementException("Unable to update subtask: an epic with this ID does not exist.");
         }
+    }
+
+    // Updates a task in the tasks map and in prioritizedTasks.
+    private void updateTaskInPrioritizedTasks(Task oldTask, Task newTask) {
+        prioritizedTasks.remove(oldTask);
+        tasks.put(newTask.getTaskId(), new Task(newTask));
+        prioritizedTasks.add(newTask);
     }
 }
