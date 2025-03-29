@@ -14,104 +14,40 @@ public class Epic extends Task {
     private LocalDateTime epicStartTime;
     private Duration epicDuration;
 
-    public Epic(
-            String name,
-            String description,
-            LocalDateTime startTime,
-            Duration duration) {
-
-        super(
-                name,
-                description,
-                startTime,
-                duration);
+    public Epic(String name, String description, LocalDateTime startTime, Duration duration) {
+        super(name, description, startTime, duration);
         epicStartTime = startTime;
         epicDuration = duration;
     }
 
-    public Epic(
-            String name,
-            String description,
-            TaskStatus taskStatus,
-            int taskId,
-            LocalDateTime startTime,
-            Duration duration) {
-
-        super(
-                name,
-                description,
-                taskStatus,
-                taskId,
-                startTime,
-                duration);
+    public Epic(String name, String description, TaskStatus taskStatus, int taskId, LocalDateTime startTime,
+                Duration duration) {
+        super(name, description, taskStatus, taskId, startTime, duration);
     }
 
-    public Epic(
-            String name,
-            String description,
-            TaskStatus taskStatus,
-            int taskId,
-            List<Integer> subTasksIds,
-            LocalDateTime startTime,
-            Duration duration,
-            LocalDateTime epicStartTime,
-            Duration epicDuration) {
+    public Epic(String name, String description, TaskStatus taskStatus, int taskId, List<Integer> subTasksIds,
+                LocalDateTime startTime, Duration duration, LocalDateTime epicStartTime, Duration epicDuration) {
 
-        this(
-                name,
-                description,
-                taskStatus,
-                taskId,
-                startTime,
-                duration);
-
+        this(name, description, taskStatus, taskId, startTime, duration);
         this.subTasksIds = subTasksIds;
         this.epicStartTime = epicStartTime;
         this.epicDuration = epicDuration;
     }
 
     public Epic(Epic epic) {
-        this(
-                epic.getName(),
-                epic.getDescription(),
-                epic.getTaskStatus(),
-                epic.getTaskId(),
-                epic.subTasksIds,
-                epic.getStartTime(),
-                epic.getDuration(),
-                epic.epicStartTime,
-                epic.epicDuration);
+        this(epic.getName(), epic.getDescription(), epic.getTaskStatus(), epic.getTaskId(), epic.subTasksIds,
+                epic.getStartTime(), epic.getDuration(), epic.epicStartTime, epic.epicDuration);
     }
 
     public Epic(Epic epic, TaskStatus taskStatus) {
-        this(
-                epic.getName(),
-                epic.getDescription(),
-                taskStatus,
-                epic.getTaskId(),
-                epic.subTasksIds,
-                epic.getStartTime(),
-                epic.getDuration(),
-                epic.epicStartTime,
-                epic.epicDuration);
+        this(epic.getName(), epic.getDescription(), taskStatus, epic.getTaskId(), epic.subTasksIds, epic.getStartTime(),
+                epic.getDuration(), epic.epicStartTime, epic.epicDuration);
     }
 
-    public Epic(
-            Epic epic,
-            LocalDateTime startTime,
-            Duration duration,
-            LocalDateTime epicStartTime,
-            Duration epicDuration) {
-        this(
-                epic.getName(),
-                epic.getDescription(),
-                epic.getTaskStatus(),
-                epic.getTaskId(),
-                epic.subTasksIds,
-                startTime,
-                duration,
-                epicStartTime,
-                epicDuration);
+    public Epic(Epic epic, LocalDateTime startTime, Duration duration, LocalDateTime epicStartTime,
+                Duration epicDuration) {
+        this(epic.getName(), epic.getDescription(), epic.getTaskStatus(), epic.getTaskId(), epic.subTasksIds, startTime,
+                duration, epicStartTime, epicDuration);
     }
 
     public Duration getEpicDuration() {
@@ -119,7 +55,7 @@ public class Epic extends Task {
     }
 
     public LocalDateTime getEpicStartTime() {
-            return epicStartTime;
+        return epicStartTime;
     }
 
     public List<Integer> getSubTasksIds() {
