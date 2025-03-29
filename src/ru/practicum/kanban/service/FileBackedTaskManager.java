@@ -69,7 +69,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private Task fromString(String value) {
-        String[] data = value.split(",", 9);
+        String[] data = value.split(",", 10);
         try {
             int taskId = Integer.parseInt(data[0]);
             TaskType taskType = TaskType.valueOf(data[1]);
@@ -78,8 +78,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             String taskDescription = data[4];
             String startTime = data[5];
             String duration = data[6];
-            String epicStartTime = data[7];
-            String epicDuration = data[8];
 
             return switch (taskType) {
                 case TASK -> new Task(
@@ -90,17 +88,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         LocalDateTime.parse(startTime),
                         Duration.parse(duration)
                 );
-                case EPIC -> new Epic(
-                        taskName,
-                        taskDescription,
-                        taskStatus,
-                        taskId,
-                        new ArrayList<>(),
-                        LocalDateTime.parse(startTime),
-                        Duration.parse(duration),
-                        LocalDateTime.parse(epicStartTime),
-                        Duration.parse(epicDuration)
-                );
+                case EPIC -> {
+                    String epicStartTime = data[7];
+                    String epicDuration = data[8];
+                    yield new Epic(
+                            taskName,
+                            taskDescription,
+                            taskStatus,
+                            taskId,
+                            new ArrayList<>(),
+                            LocalDateTime.parse(startTime),
+                            Duration.parse(duration),
+                            LocalDateTime.parse(epicStartTime),
+                            Duration.parse(epicDuration)
+                    );
+                }
                 case SUBTASK -> {
                     int epicId = Integer.parseInt(data[9]);
                     yield new SubTask(
