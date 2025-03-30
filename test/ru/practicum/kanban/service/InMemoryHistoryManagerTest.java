@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import ru.practicum.kanban.model.Task;
 import ru.practicum.kanban.model.enums.TaskStatus;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 class InMemoryHistoryManagerTest {
@@ -20,7 +22,12 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void addTask() {
-        task = new Task("Task", "Test task description");
+        task = new Task(
+                "Task",
+                "Test task description",
+                LocalDateTime.of(2025, 1, 1, 0,0),
+                Duration.ofHours(1)
+        );
         taskManager.addTask(task);
         taskManager.getTaskById(task.getTaskId());
 
@@ -29,7 +36,12 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void removeTask() {
-        task = new Task("Task", "Test task description");
+        task = new Task(
+                "Task",
+                "Test task description",
+                LocalDateTime.of(2025, 1, 1, 0,0),
+                Duration.ofHours(1)
+        );
         taskManager.addTask(task);
         taskManager.getTaskById(task.getTaskId());
         taskManager.removeTaskById(task.getTaskId());
@@ -40,7 +52,12 @@ class InMemoryHistoryManagerTest {
     @Test
     void removeAllTasks() {
         for (int i = 0; i < 20; i++) {
-            task = new Task("Task", String.valueOf(i));
+            task = new Task(
+                    "Task",
+                    String.valueOf(i),
+                    LocalDateTime.of(2025, 1, i + 1, 0,0),
+                    Duration.ofHours(1)
+            );
             taskManager.addTask(task);
             taskManager.getTaskById(task.getTaskId());
         }
@@ -53,7 +70,12 @@ class InMemoryHistoryManagerTest {
     @Test
     void shouldNotDeleteTheOldestTaskWhenThereAreMore10Tasks() {
         for (int i = 0; i < 20; i++) {
-            task = new Task("Task", String.valueOf(i));
+            task = new Task(
+                    "Task",
+                    String.valueOf(i),
+                    LocalDateTime.of(2025, 1, i + 1, 0,0),
+                    Duration.ofHours(1)
+            );
             taskManager.addTask(task);
             taskManager.getTaskById(task.getTaskId());
         }
@@ -63,10 +85,22 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void shouldNotReturnDuplicateBrowsingHistories() {
-        task = new Task("Task", "Test task description");
+        task = new Task(
+                "Task",
+                "Test task description",
+                LocalDateTime.of(2025, 1, 1, 0,0),
+                Duration.ofHours(1)
+        );
         taskManager.addTask(task);
         task = taskManager.getTaskById(task.getTaskId());
-        task = new Task(task.getName(), task.getDescription(), TaskStatus.IN_PROGRESS, task.getTaskId());
+        task = new Task(
+                task.getName(),
+                task.getDescription(),
+                TaskStatus.IN_PROGRESS,
+                task.getTaskId(),
+                LocalDateTime.of(2025, 1, 1, 0,0),
+                Duration.ofHours(1)
+        );
         taskManager.addTask(task);
         task = taskManager.getTaskById(task.getTaskId());
         List<Task> history = taskManager.getHistory();

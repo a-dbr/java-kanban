@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -66,20 +69,51 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private Task fromString(String value) {
-        String[] data = value.split(",", 6);
+        String[] data = value.split(",", 10);
         try {
             int taskId = Integer.parseInt(data[0]);
             TaskType taskType = TaskType.valueOf(data[1]);
             String taskName = data[2];
             TaskStatus taskStatus = TaskStatus.valueOf(data[3]);
             String taskDescription = data[4];
+            String startTime = data[5];
+            String duration = data[6];
 
             return switch (taskType) {
-                case TASK -> new Task(taskName, taskDescription, taskStatus, taskId);
-                case EPIC -> new Epic(taskName, taskDescription, taskStatus, taskId);
+                case TASK -> new Task(
+                        taskName,
+                        taskDescription,
+                        taskStatus,
+                        taskId,
+                        LocalDateTime.parse(startTime),
+                        Duration.parse(duration)
+                );
+                case EPIC -> {
+                    String epicStartTime = data[7];
+                    String epicDuration = data[8];
+                    yield new Epic(
+                            taskName,
+                            taskDescription,
+                            taskStatus,
+                            taskId,
+                            new ArrayList<>(),
+                            LocalDateTime.parse(startTime),
+                            Duration.parse(duration),
+                            LocalDateTime.parse(epicStartTime),
+                            Duration.parse(epicDuration)
+                    );
+                }
                 case SUBTASK -> {
-                    int epicId = Integer.parseInt(data[5]);
-                    yield new SubTask(taskName, taskDescription, taskStatus, taskId, epicId);
+                    int epicId = Integer.parseInt(data[9]);
+                    yield new SubTask(
+                            taskName,
+                            taskDescription,
+                            taskStatus,
+                            taskId,
+                            epicId,
+                            LocalDateTime.parse(startTime),
+                            Duration.parse(duration)
+                    );
                 }
             };
         } catch (IndexOutOfBoundsException e) {
@@ -135,12 +169,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private void save() throws ManagerSaveException {
         try (BufferedWriter writer = Files.newBufferedWriter(file)) {
-            writer.write(TaskCsvFormatHandler.getHeader());
+            writer.write(TaskCsvFormatHandler.getHeader()); // Write CSV header
             writer.newLine();
 
             List<Task> allTasks = getAllTasks();
             for (Task task : allTasks) {
-                writer.write(task.toString());
+                writer.write(task.getDataForFileSaving());
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -162,5 +196,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     @Override
     public void update(Task task) {
         super.update(task);
+        save();
     }
 }

@@ -4,34 +4,58 @@ import ru.practicum.kanban.model.enums.TaskType;
 import ru.practicum.kanban.service.TaskManager;
 import ru.practicum.kanban.model.enums.TaskStatus;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class Task {
+public class Task implements Comparable<Task> {
     private final String name;
     private final String description;
+    private final Duration duration;
+    private final LocalDateTime startTime;
     private final TaskStatus taskStatus;
     private final int taskId;
 
-    public Task(String name, String description) {
+    public Task(String name,
+                String description,
+                LocalDateTime startTime,
+                Duration duration) {
         this.name = name;
         this.description = description;
         this.taskStatus = TaskStatus.NEW;
         this.taskId = TaskManager.generateTaskId();
+        this.startTime = startTime;
+        this.duration = duration;
     }
 
-    public Task(String name, String description, TaskStatus taskStatus, int taskId) {
+    public Task(String name,
+                String description,
+                TaskStatus taskStatus,
+                int taskId,
+                LocalDateTime startTime,
+                Duration duration) {
         this.name = name;
         this.description = description;
         this.taskId = taskId;
         this.taskStatus = taskStatus;
+        this.startTime = startTime;
+        this.duration = duration;
     }
 
     public Task(Task task) {
-        this(task.name, task.description, task.taskStatus, task.taskId);
+        this(task.name, task.description, task.taskStatus, task.taskId, task.startTime, task.duration);
+    }
+
+    public String getDataForFileSaving() {
+        return this.toString();
     }
 
     public String getDescription() {
         return description;
+    }
+
+    public Duration getDuration() {
+        return duration;
     }
 
     public String getName() {
@@ -40,6 +64,22 @@ public class Task {
 
     public int getTaskId() {
         return taskId;
+    }
+
+    @Override
+    public int compareTo(Task task) {
+        return this.startTime.compareTo(task.startTime);
+    }
+
+    public LocalDateTime getEndTime() {
+        if (startTime != null && duration != null) {
+            return startTime.plus(duration);
+        }
+        return null;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
     public TaskStatus getTaskStatus() {
@@ -52,7 +92,9 @@ public class Task {
                 TaskType.TASK + "," +
                 name + "," +
                 taskStatus + "," +
-                description;
+                description  + "," +
+                startTime  + "," +
+                duration;
     }
 
     @Override
