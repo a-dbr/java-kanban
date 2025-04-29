@@ -16,10 +16,7 @@ public class Task implements Comparable<Task> {
     private final TaskStatus taskStatus;
     private final int taskId;
 
-    public Task(String name,
-                String description,
-                LocalDateTime startTime,
-                Duration duration) {
+    public Task(String name, String description, LocalDateTime startTime, Duration duration) {
         this.name = name;
         this.description = description;
         this.taskStatus = TaskStatus.NEW;
@@ -28,11 +25,7 @@ public class Task implements Comparable<Task> {
         this.duration = duration;
     }
 
-    public Task(String name,
-                String description,
-                TaskStatus taskStatus,
-                int taskId,
-                LocalDateTime startTime,
+    public Task(String name, String description, TaskStatus taskStatus, int taskId, LocalDateTime startTime,
                 Duration duration) {
         this.name = name;
         this.description = description;
@@ -86,10 +79,21 @@ public class Task implements Comparable<Task> {
         return taskStatus;
     }
 
+    public TaskType getTaskType() {
+        if (this.getClass() == Task.class) {
+            return TaskType.TASK;
+        } else if (this instanceof Epic) {
+            return TaskType.EPIC;
+        } else if (this instanceof SubTask) {
+            return TaskType.SUBTASK;
+        }
+        throw new IllegalStateException("Unknown Task subtype: " + getClass());
+    }
+
     @Override
     public String toString() {
         return taskId + "," +
-                TaskType.TASK + "," +
+                getTaskType() + "," +
                 name + "," +
                 taskStatus + "," +
                 description  + "," +
