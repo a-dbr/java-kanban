@@ -198,6 +198,8 @@ public class TaskHandler extends BaseHttpHandler {
             sendNotFound(exchange, e.getMessage());
         } catch (MethodNotAllowedException e) {
             sendMethodNotFound(exchange, e.getMessage());
+        } catch (RuntimeException e) {
+            sendInternalError(exchange, e.getMessage());
         }
     }
 

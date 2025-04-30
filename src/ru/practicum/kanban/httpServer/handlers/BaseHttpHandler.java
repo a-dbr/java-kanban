@@ -32,6 +32,10 @@ public abstract class BaseHttpHandler  implements HttpHandler {
         sendText(httpExchange, message, 405);
     }
 
+    protected void sendInternalError(HttpExchange httpExchange, String message) throws IOException {
+        sendText(httpExchange, message, 500);
+    }
+
     protected int getTaskId(String path) throws IOException {
         String[] arrayPath = path.split("/");
         return Integer.parseInt(arrayPath[2]);

@@ -320,4 +320,19 @@ public class HttpTaskServerTest {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(406, response.statusCode(), "Expected HTTP 406 when task time overlaps");
     }
+
+    @Test
+    void testInternalError() throws IOException, InterruptedException {
+        String taskToJson = "{}";
+
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .POST(HttpRequest.BodyPublishers.ofString(taskToJson))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(500, response.statusCode(),"Expected HTTP 500 when sending an empty JSON");
+    }
 }
