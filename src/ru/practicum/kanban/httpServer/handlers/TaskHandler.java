@@ -75,10 +75,10 @@ public class TaskHandler extends BaseHttpHandler {
         try {
             if (manager.isExist(task)) {
                 manager.update(task);
-                sendText(exchange, "Task successfully updated.", 201);
+                sendText(exchange, "Task successfully updated.", 200);
             } else {
                 manager.addTask(task);
-                sendText(exchange, "Task successfully added.", 201);
+                sendText(exchange, "Task successfully added.", 200);
             }
         } catch (TaskIsOverlapException e) {
 
