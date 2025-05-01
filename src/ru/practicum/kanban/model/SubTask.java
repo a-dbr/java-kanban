@@ -1,7 +1,6 @@
 package ru.practicum.kanban.model;
 
 import ru.practicum.kanban.model.enums.TaskStatus;
-import ru.practicum.kanban.model.enums.TaskType;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -14,33 +13,21 @@ public class SubTask extends Task {
         this.epicId = epicId;
     }
 
-    public SubTask(
-            String name,
-            String description,
-            TaskStatus taskStatus,
-            int taskId,
-            int epicId,
-            LocalDateTime startTime,
-            Duration duration) {
+    public SubTask(String name, String description, TaskStatus taskStatus, int taskId, int epicId,
+                   LocalDateTime startTime, Duration duration) {
         super(name, description, taskStatus, taskId, startTime, duration);
         this.epicId = epicId;
     }
 
     public SubTask(SubTask subTask) {
-        this(
-                subTask.getName(),
-                subTask.getDescription(),
-                subTask.getTaskStatus(),
-                subTask.getTaskId(),
-                subTask.getEpicId(),
-                subTask.getStartTime(),
-                subTask.getDuration());
+        this(subTask.getName(), subTask.getDescription(), subTask.getTaskStatus(), subTask.getTaskId(),
+                subTask.getEpicId(), subTask.getStartTime(), subTask.getDuration());
     }
 
     @Override
     public String getDataForFileSaving() {
         return getTaskId() + "," +
-                TaskType.SUBTASK + "," +
+                getTaskType() + "," +
                 getName() + "," +
                 getTaskStatus() + "," +
                 getDescription()  + "," +
@@ -58,7 +45,7 @@ public class SubTask extends Task {
     @Override
     public String toString() {
         return getTaskId() + "," +
-                TaskType.SUBTASK + "," +
+                getTaskType() + "," +
                 getName() + "," +
                 getTaskStatus() + "," +
                 getDescription()  + "," +

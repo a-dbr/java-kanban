@@ -14,11 +14,21 @@ public interface TaskManager {
 
     List<Task> getAllTasks();
 
+    List<Task> getEpics();
+
     List<Task> getHistory();
 
     Set<Task> getPrioritizedTasks();
 
+    List<Task> getSubTasks();
+
+    List<Task> getSubTasksByEpicId(int epicId);
+
     Task getTaskById(int taskId);
+
+    List<Task> getTasks();
+
+    boolean isExist(Task task);
 
     void removeAllTasks();
 

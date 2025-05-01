@@ -1,7 +1,6 @@
 package ru.practicum.kanban.model;
 
 import ru.practicum.kanban.model.enums.TaskStatus;
-import ru.practicum.kanban.model.enums.TaskType;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -73,7 +72,7 @@ public class Epic extends Task {
     @Override
     public String toString() {
         return getTaskId() + "," +
-                TaskType.EPIC + "," +
+                getTaskType() + "," +
                 getName() + "," +
                 getTaskStatus() + "," +
                 getDescription()  + "," +
