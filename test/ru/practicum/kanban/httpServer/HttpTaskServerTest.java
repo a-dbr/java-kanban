@@ -80,7 +80,7 @@ public class HttpTaskServerTest {
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(201, response.statusCode(), "Expected HTTP 201 when adding a task");
+        assertEquals(200, response.statusCode(), "Expected HTTP 200 when adding a task");
 
         List<Task> tasksFromManager = manager.getTasks();
 
@@ -247,7 +247,7 @@ public class HttpTaskServerTest {
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(201, response.statusCode(), "Expected HTTP 201 when adding a task");
+        assertEquals(200, response.statusCode(), "Expected HTTP 200 when adding a task");
 
         Task newTask = new Task(
                 task.getName(),
@@ -266,7 +266,7 @@ public class HttpTaskServerTest {
                 .build();
 
         response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(201, response.statusCode(), "Expected HTTP 201 when updating a task");
+        assertEquals(200, response.statusCode(), "Expected HTTP 200 when updating a task");
 
         List<Task> tasksFromManager = manager.getTasks();
 
